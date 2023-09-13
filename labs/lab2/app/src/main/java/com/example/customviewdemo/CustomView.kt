@@ -5,22 +5,24 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
-import android.graphics.Path
 import android.graphics.PointF
+import android.graphics.RectF
 import android.util.AttributeSet
 import android.util.Log
 import android.view.View
+import androidx.compose.ui.graphics.Shape
 
 class CustomView(context: Context, attrs: AttributeSet) : View(context, attrs) {
 
     private lateinit var bitmap: Bitmap
     private lateinit var bitmapCanvas: Canvas
     private val paint = Paint().apply {
-        color = Color.BLACK
+        color = Color.RED
         style = Paint.Style.STROKE
         strokeWidth = 10f
     }
-    private val path = Path()
+
+
 
     // Ensure that the bitmap size matches the view size
     private fun ensureBitmap() {
@@ -36,25 +38,42 @@ class CustomView(context: Context, attrs: AttributeSet) : View(context, attrs) {
         ensureBitmap()
     }
 
+    // override the onDraw method of View class
     override fun onDraw(canvas: Canvas?) {
         super.onDraw(canvas)
-        canvas?.drawBitmap(bitmap, 0f, 0f, null)
+        canvas?.drawBitmap(bitmap, 0f, 0f, null) // start from left top corner
     }
 
-    fun drawPoints(points: List<PointF>) {
-        if (points.isEmpty()) return
-
+    fun drawPoints(points: List<MyPoint>) {
         ensureBitmap()
+        for (myPoint in points) {
+            paint.color = myPoint.color
+            paint.strokeWidth = myPoint.size
 
-        path.reset()
-        val firstPoint = points[0]
-        path.moveTo(firstPoint.x, firstPoint.y)
-
-        for (i in 1 until points.size) {
-            path.lineTo(points[i].x, points[i].y)
+            when (myPoint.shape) {
+                "Circle" -> bitmapCanvas.drawCircle(myPoint.point.x, myPoint.point.y, paint.strokeWidth / 2, paint)
+                "Rectangle" -> {
+                    val halfWidth = paint.strokeWidth
+                    bitmapCanvas.drawRect(myPoint.point.x - halfWidth, myPoint.point.y - halfWidth,
+                        myPoint.point.x + halfWidth, myPoint.point.y + halfWidth, paint)
+                }
+                "Oval" -> {
+                    val rect = RectF(myPoint.point.x - 75f, myPoint.point.y - 50f,
+                        myPoint.point.x + 75f, myPoint.point.y + 50f)
+                    bitmapCanvas.drawOval(rect, paint)
+                }
+            }
         }
-
-        bitmapCanvas.drawPath(path, paint)
-        invalidate()  // This will trigger a redraw
+        invalidate()  // redraw
     }
+
+
+    fun setCurrentPaintColor(color: Int) {
+        paint.color = color
+    }
+
+    fun setCurrentPaintSize(size: Float) {
+        paint.strokeWidth = size
+    }
+
 }
