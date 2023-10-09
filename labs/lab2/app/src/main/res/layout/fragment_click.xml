@@ -68,7 +68,7 @@
 
     <!-- Start Drawing Button -->
     <Button
-        android:id="@+id/clickMe"
+        android:id="@+id/button_draw"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="168dp"

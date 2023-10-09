@@ -10,19 +10,14 @@ import android.widget.ArrayAdapter
 import android.widget.Spinner
 import android.widget.Toast
 import androidx.fragment.app.activityViewModels
+import androidx.navigation.Navigation.findNavController
+import androidx.navigation.fragment.findNavController
 import com.example.customviewdemo.databinding.FragmentClickBinding
 
 
 class ClickFragment : Fragment() {
 
-
-    private var buttonFunction : () -> Unit = {}
-    private val viewModel: SimpleViewModel by activityViewModels()
-
-
-    fun setButtonFunction(newFunc: () -> Unit) {
-        buttonFunction = newFunc
-    }
+    private val viewModel: SimpleViewModel by activityViewModels() // shared viewmodel across the activity
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -30,67 +25,47 @@ class ClickFragment : Fragment() {
     ): View {
         // Inflate the layout for this fragment
         val binding = FragmentClickBinding.inflate(inflater, container, false)
-        binding.clickMe.setOnClickListener {
-            buttonFunction?.invoke()
+
+        // click button to navigate
+        binding.buttonDraw.setOnClickListener {
+            findNavController().navigate(R.id.action_clickFragment_to_drawFragment)
         }
 
-        // color Spinner
-        val colorAdapter = ArrayAdapter.createFromResource(
-            requireContext(),
-            R.array.color_array,
-            android.R.layout.simple_spinner_item
-        )
-        colorAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        binding.spinnerColor.adapter = colorAdapter
 
-        // size Spinner
-        val sizeAdapter = ArrayAdapter.createFromResource(
-            requireContext(),
-            R.array.size_array,
-            android.R.layout.simple_spinner_item
-        )
-        sizeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        binding.spinnerSize.adapter = sizeAdapter
+        // setup all three spinners
+        setupSpinner(binding.spinnerColor, R.array.color_array)
+        setupSpinner(binding.spinnerSize, R.array.size_array)
+        setupSpinner(binding.spinnerShape, R.array.shape_array)
 
-        // shape Spinner
-        val shapeAdapter = ArrayAdapter.createFromResource(
-            requireContext(),
-            R.array.shape_array,
-            android.R.layout.simple_spinner_item
-        )
-        shapeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        binding.spinnerShape.adapter = shapeAdapter
-
-
-        binding.spinnerColor.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
-                val selectedColor = parent.getItemAtPosition(position).toString()
-                viewModel.selectColor(selectedColor)
-            }
-
-            override fun onNothingSelected(parent: AdapterView<*>) {}
-        }
-
-        binding.spinnerSize.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
-                val selectedSize = parent.getItemAtPosition(position).toString()
-                viewModel.selectSize(selectedSize)
-            }
-
-            override fun onNothingSelected(parent: AdapterView<*>) {}
-        }
-
-        binding.spinnerShape.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
-                val selectedShape = parent.getItemAtPosition(position).toString()
-                viewModel.selectShape(selectedShape)
-            }
-
-            override fun onNothingSelected(parent: AdapterView<*>) {}
-        }
+        // setup listerner for spinners
+        setSpinnerListener(binding.spinnerColor) { viewModel.selectColor(it) }
+        setSpinnerListener(binding.spinnerSize) { viewModel.selectSize(it) }
+        setSpinnerListener(binding.spinnerShape) { viewModel.selectShape(it) }
 
         return binding.root
     }
 
+    // setup adapter function
+    private fun setupSpinner(spinner: Spinner, arrayResId: Int) {
+        val adapter = ArrayAdapter.createFromResource(
+            requireContext(), // get main activity from this fragment
+            arrayResId, // array id from string.xml under values package
+            android.R.layout.simple_spinner_item // layout for each item in spinner
+        )
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        spinner.adapter = adapter
+    }
 
+    // OnItemSelectedListener
+    private fun setSpinnerListener(spinner: Spinner, onItemSelected: (String) -> Unit) {
+
+        spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
+                val selectedItem = parent.getItemAtPosition(position).toString()
+                onItemSelected(selectedItem)
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>) {}
+        }
+    }
 }

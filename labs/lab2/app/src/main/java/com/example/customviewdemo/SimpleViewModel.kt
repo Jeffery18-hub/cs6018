@@ -1,7 +1,6 @@
 package com.example.customviewdemo
 
-import android.graphics.Canvas
-import android.graphics.Paint
+
 import android.graphics.PointF
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
