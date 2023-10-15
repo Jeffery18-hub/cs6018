@@ -7,11 +7,11 @@ import com.android.volley.toolbox.Volley
 
 class VolleySingleton constructor(context: Context) {
     companion object {
-        @Volatile
+        @Volatile // this notation is make sure 'instance' is visible to all threads and if one thread changes the instance, all the other threads can see immediately
         private var INSTANCE: VolleySingleton? = null
         fun getInstance(context: Context) =
-            INSTANCE ?: synchronized(this) {
-                INSTANCE ?: VolleySingleton(context).also {
+            INSTANCE?: synchronized(this) {  // '?:' is elvis operator
+                INSTANCE?: VolleySingleton(context).also {// instance? is double check to avoid multi threads create multi instances
                     INSTANCE = it
                 }
             }
